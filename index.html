@@ -32,6 +32,16 @@
     <!-- Notification Container -->
     <div class="notification-container" id="notificationContainer"></div>
 
+    <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "07df74f2-8557-4915-b74a-eb46f24e49bf",
+    });
+  });
+</script>
+    
     <!-- Header with Search -->
     <header class="header">
         <div class="header-top">
@@ -157,3 +167,4 @@
     <script src="script.js"></script>
 </body>
 </html>
+
