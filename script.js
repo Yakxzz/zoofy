@@ -47,11 +47,8 @@ const sampleProducts = [
         name: 'Men Regular Fit Solid Button Down Collar Casual Shirt',
         category: 'men',
         productCategory: 'Shirt',
-        price: 1599,
-        image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500',
-        images: [
-            'https://i.pinimg.com/736x/21/00/10/21001079de6dbd5b6809b3f2b40717bf.jpg',
-        ],
+        price: 500,
+        image: 'https://i.pinimg.com/736x/21/00/10/21001079de6dbd5b6809b3f2b40717bf.jpg',
         description: 'Latest Designer Shirt Fabric Is Cotton Blend And Soft Fabric, Shirt Design Formal And Casual To Daily Wear, Shirt Ocassion Is Casual Wear, Partywear, Evening Wear All Day Are Wear',
         buyUrl: 'https://fktr.in/XfEuUpb',
         store: 'flipkart'
