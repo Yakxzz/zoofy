@@ -14,11 +14,9 @@ const STORE_CONFIG = {
     }
 };
 
-// Product Categories for Search
+// Product Categories for Search (Reduced for better UI)
 const PRODUCT_CATEGORIES = [
-    'Saree', 'Shirt', 'Kurti', 'Dress', 'Jeans', 'T-Shirt', 'Blouse', 
-    'Handbag', 'Shoes', 'Jacket', 'Sweater', 'Trouser', 'Skirt', 
-    'Top', 'Leggings', 'Suit', 'Lehenga', 'Gown', 'Palazzo', 'Crop Top'
+    'Saree', 'Shirt', 'Kurti', 'Dress', 'Jeans', 'T-Shirt'
 ];
 
 let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -26,6 +24,7 @@ let products = [];
 let currentSort = 'default';
 let currentCategory = 'all';
 let currentProductImageIndex = 0;
+let currentSearchQuery = '';
 
 // Sample Products Data with categories
 const sampleProducts = [
@@ -113,16 +112,38 @@ const sampleProducts = [
 function requestFullscreen() {
     const elem = document.documentElement;
     
+    // Try standard fullscreen API first
     if (elem.requestFullscreen) {
-        elem.requestFullscreen().catch(err => {
+        elem.requestFullscreen({ navigationUI: 'hide' }).catch(err => {
             console.log('Fullscreen request failed:', err);
+            // Try alternative methods
+            tryAlternativeFullscreen();
         });
     } else if (elem.webkitRequestFullscreen) { // Safari
         elem.webkitRequestFullscreen();
+    } else if (elem.webkitRequestFullScreen) { // Older Safari
+        elem.webkitRequestFullScreen();
     } else if (elem.msRequestFullscreen) { // IE/Edge
         elem.msRequestFullscreen();
     } else if (elem.mozRequestFullScreen) { // Firefox
         elem.mozRequestFullScreen();
+    } else {
+        tryAlternativeFullscreen();
+    }
+}
+
+function tryAlternativeFullscreen() {
+    // For mobile browsers, try to hide URL bar
+    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        // Scroll to hide address bar
+        window.scrollTo(0, 1);
+        setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 100);
+        
+        // Set viewport height to full screen
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
     }
 }
 
@@ -131,6 +152,8 @@ function exitFullscreen() {
         document.exitFullscreen();
     } else if (document.webkitExitFullscreen) { // Safari
         document.webkitExitFullscreen();
+    } else if (document.webkitCancelFullScreen) { // Older Safari
+        document.webkitCancelFullScreen();
     } else if (document.msExitFullscreen) { // IE/Edge
         document.msExitFullscreen();
     } else if (document.mozCancelFullScreen) { // Firefox
@@ -141,71 +164,159 @@ function exitFullscreen() {
 function isFullscreen() {
     return !!(document.fullscreenElement || 
               document.webkitFullscreenElement || 
+              document.webkitCurrentFullScreenElement ||
               document.mozFullScreenElement || 
               document.msFullscreenElement);
+}
+
+// Force fullscreen on any user interaction
+function forceFullscreenOnInteraction() {
+    const events = ['click', 'touchstart', 'keydown', 'mousedown'];
+    let interactionCount = 0;
+    const maxInteractions = 5;
+    
+    const handler = (e) => {
+        if (!isFullscreen() && interactionCount < maxInteractions) {
+            requestFullscreen();
+            interactionCount++;
+        }
+    };
+    
+    events.forEach(event => {
+        document.addEventListener(event, handler, { passive: true });
+    });
+    
+    // Add fullscreen trigger to all buttons
+    const addFullscreenToButtons = () => {
+        const allButtons = document.querySelectorAll('button, .btn, .filter-btn, .nav-item, .product-card, .search-category-btn, .sort-option, .cart-item');
+        allButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (!isFullscreen()) {
+                    requestFullscreen();
+                }
+            }, { passive: true, once: false });
+        });
+    };
+    
+    // Add to existing buttons
+    addFullscreenToButtons();
+    
+    // Also observe for dynamically added buttons
+    const observer = new MutationObserver(() => {
+        addFullscreenToButtons();
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 }
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     products = [...sampleProducts];
-    renderProducts(products);
+    // Don't render products immediately - wait for splash screen
     updateCartCount();
     setupEventListeners();
     loadProductsFromStorage();
     setupSearchFullscreen();
+    
+    // Request fullscreen immediately on splash screen - trigger on page load
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+        // Make entire splash screen trigger fullscreen on any interaction
+        const triggerFullscreen = () => {
+            if (!isFullscreen()) {
+                requestFullscreen();
+            }
+        };
+        
+        splash.addEventListener('click', triggerFullscreen, { once: false });
+        splash.addEventListener('touchstart', triggerFullscreen, { once: false });
+        
+        // Also make splash content clickable
+        const splashContent = splash.querySelector('.splash-content');
+        if (splashContent) {
+            splashContent.addEventListener('click', triggerFullscreen, { once: false });
+            splashContent.addEventListener('touchstart', triggerFullscreen, { once: false });
+        }
+        
+        // Try to request fullscreen automatically multiple times
+        setTimeout(() => requestFullscreen(), 50);
+        setTimeout(() => requestFullscreen(), 200);
+        setTimeout(() => requestFullscreen(), 500);
+        setTimeout(() => requestFullscreen(), 1000);
+    }
+    
+    // Set up mobile viewport height
+    setMobileViewportHeight();
+    
     hideSplashScreen();
+    
+    // Force fullscreen on any user interaction
+    forceFullscreenOnInteraction();
+    
+    // Aggressive fullscreen for Chrome - try multiple times
+    let fullscreenAttempts = 0;
+    const maxAttempts = 5;
+    const tryFullscreen = setInterval(() => {
+        if (!isFullscreen() && fullscreenAttempts < maxAttempts) {
+            requestFullscreen();
+            fullscreenAttempts++;
+        } else if (isFullscreen() || fullscreenAttempts >= maxAttempts) {
+            clearInterval(tryFullscreen);
+        }
+    }, 1000);
 });
 
-// Listen for fullscreen changes
-document.addEventListener('fullscreenchange', () => {
-    if (!isFullscreen()) {
-        // If user exits fullscreen, try to re-enter after a short delay
-        setTimeout(() => {
-            if (!isFullscreen()) {
-                requestFullscreen();
-            }
-        }, 1000);
-    }
-});
+// Set mobile viewport height to account for browser UI
+function setMobileViewportHeight() {
+    const setVH = () => {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+    
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+}
 
-document.addEventListener('webkitfullscreenchange', () => {
-    if (!isFullscreen()) {
-        setTimeout(() => {
-            if (!isFullscreen()) {
-                requestFullscreen();
-            }
-        }, 1000);
-    }
-});
+// Listen for fullscreen changes - re-enter if exited
+function setupFullscreenListeners() {
+    const reEnterFullscreen = () => {
+        if (!isFullscreen()) {
+            setTimeout(() => {
+                if (!isFullscreen()) {
+                    requestFullscreen();
+                }
+            }, 500);
+        }
+    };
+    
+    document.addEventListener('fullscreenchange', reEnterFullscreen);
+    document.addEventListener('webkitfullscreenchange', reEnterFullscreen);
+    document.addEventListener('mozfullscreenchange', reEnterFullscreen);
+    document.addEventListener('MSFullscreenChange', reEnterFullscreen);
+}
 
-document.addEventListener('mozfullscreenchange', () => {
-    if (!isFullscreen()) {
-        setTimeout(() => {
-            if (!isFullscreen()) {
-                requestFullscreen();
-            }
-        }, 1000);
-    }
-});
-
-document.addEventListener('MSFullscreenChange', () => {
-    if (!isFullscreen()) {
-        setTimeout(() => {
-            if (!isFullscreen()) {
-                requestFullscreen();
-            }
-        }, 1000);
-    }
-});
+// Setup fullscreen listeners
+setupFullscreenListeners();
 
 // Hide Splash Screen
 function hideSplashScreen() {
     setTimeout(() => {
         const splash = document.getElementById('splashScreen');
         if (splash) {
-            splash.style.display = 'none';
-            // Request fullscreen after splash screen disappears
-            requestFullscreen();
+            splash.style.animation = 'fadeOut 0.5s ease forwards';
+            setTimeout(() => {
+                splash.style.display = 'none';
+                // Render products with animation after splash
+                renderProducts(products);
+                // Ensure fullscreen is active after splash
+                if (!isFullscreen()) {
+                    requestFullscreen();
+                }
+            }, 500);
         }
     }, 2500);
 }
@@ -256,21 +367,39 @@ function setupEventListeners() {
     document.getElementById('searchInput').addEventListener('click', () => {
         openSearchFullscreen();
     });
+    
+    // Update main search clear button visibility on page load
+    updateMainSearchUI();
 
     // Search fullscreen input
     const searchInputFullscreen = document.getElementById('searchInputFullscreen');
     const searchClearFullscreen = document.getElementById('searchClearFullscreen');
     
     searchInputFullscreen.addEventListener('input', (e) => {
-        const query = e.target.value.toLowerCase();
+        const query = e.target.value.trim();
         searchClearFullscreen.style.display = query ? 'block' : 'none';
-        performSearch(query);
+        // Don't auto-search on every keystroke - only on Enter
+    });
+    
+    searchInputFullscreen.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const query = e.target.value.trim();
+            if (query) {
+                performSearch(query.toLowerCase());
+            } else {
+                // If empty, clear search
+                clearMainSearch();
+            }
+        }
     });
 
-    searchClearFullscreen.addEventListener('click', () => {
+    searchClearFullscreen.addEventListener('click', (e) => {
+        e.stopPropagation();
         searchInputFullscreen.value = '';
         searchClearFullscreen.style.display = 'none';
         document.getElementById('searchResults').innerHTML = '';
+        // Clear search and show all products
+        clearMainSearch();
     });
 
     // Cart button
@@ -325,72 +454,172 @@ function setupSearchFullscreen() {
 
 function openSearchFullscreen() {
     const searchFullscreen = document.getElementById('searchFullscreen');
+    const searchInputFullscreen = document.getElementById('searchInputFullscreen');
+    const searchClearFullscreen = document.getElementById('searchClearFullscreen');
+    
+    // Preserve current search query when reopening
+    if (currentSearchQuery) {
+        searchInputFullscreen.value = currentSearchQuery;
+        searchClearFullscreen.style.display = 'block';
+    } else {
+        searchInputFullscreen.value = '';
+        searchClearFullscreen.style.display = 'none';
+    }
+    
+    // Reset animation
+    searchFullscreen.style.opacity = '0';
+    searchFullscreen.style.transform = 'translateY(100%)';
     searchFullscreen.classList.add('show');
     document.body.style.overflow = 'hidden';
+    
+    // Trigger animation
     setTimeout(() => {
-        document.getElementById('searchInputFullscreen').focus();
+        searchFullscreen.style.opacity = '1';
+        searchFullscreen.style.transform = 'translateY(0)';
+    }, 10);
+    
+    setTimeout(() => {
+        searchInputFullscreen.focus();
+        // Move cursor to end of text
+        searchInputFullscreen.setSelectionRange(searchInputFullscreen.value.length, searchInputFullscreen.value.length);
     }, 300);
 }
 
-function closeSearchFullscreen() {
+function closeSearchFullscreen(keepQuery = false) {
     const searchFullscreen = document.getElementById('searchFullscreen');
-    searchFullscreen.classList.remove('show');
-    document.body.style.overflow = 'auto';
-    document.getElementById('searchInputFullscreen').value = '';
-    document.getElementById('searchClearFullscreen').style.display = 'none';
-    document.getElementById('searchResults').innerHTML = '';
+    
+    // Animate out
+    searchFullscreen.style.opacity = '0';
+    searchFullscreen.style.transform = 'translateY(100%)';
+    
+    setTimeout(() => {
+        searchFullscreen.classList.remove('show');
+        document.body.style.overflow = 'auto';
+        
+        if (!keepQuery) {
+            document.getElementById('searchInputFullscreen').value = '';
+            document.getElementById('searchClearFullscreen').style.display = 'none';
+            document.getElementById('searchResults').innerHTML = '';
+        }
+    }, 400);
 }
 
 function searchByCategory(category) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     const query = category.toLowerCase();
-    document.getElementById('searchInputFullscreen').value = category;
-    performSearch(query);
+    currentSearchQuery = category;
+    
+    // Filter products by category and show in main UI
+    let filtered = products.filter(p => 
+        p.productCategory.toLowerCase() === query ||
+        p.name.toLowerCase().includes(query) ||
+        p.category.toLowerCase() === query
+    );
+    
+    // Apply category filter if active
+    if (currentCategory !== 'all') {
+        filtered = filtered.filter(p => p.category === currentCategory);
+    }
+    
+    // Apply sort if active
+    if (currentSort !== 'default') {
+        filtered = sortProductsArray(filtered, currentSort);
+    }
+    
+    // Close search and show results (keep query)
+    closeSearchFullscreen(true);
+    
+    // Render filtered products in main UI
+    renderProducts(filtered);
+    
+    // Update search input UI
+    updateMainSearchUI();
+    
+    // Scroll to top to show results
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
 function performSearch(query) {
-    const resultsContainer = document.getElementById('searchResults');
-    
-    if (!query) {
-        resultsContainer.innerHTML = '';
+    if (!query || query.trim() === '') {
+        // If query is empty, show all products
+        clearMainSearch();
         return;
     }
 
+    const searchQuery = query.trim().toLowerCase();
+    currentSearchQuery = query.trim();
+    
     const filtered = products.filter(p => 
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.productCategory.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query)
+        p.name.toLowerCase().includes(searchQuery) ||
+        p.description.toLowerCase().includes(searchQuery) ||
+        p.productCategory.toLowerCase().includes(searchQuery) ||
+        p.category.toLowerCase().includes(searchQuery)
     );
 
-    if (filtered.length === 0) {
-        resultsContainer.innerHTML = `
-            <div class="no-results">
-                <i class="fas fa-search"></i>
-                <p>No products found</p>
-            </div>
-        `;
-        return;
+    // Close search and show results in main UI (keep query)
+    closeSearchFullscreen(true);
+    
+    // Apply category filter if active
+    let finalFiltered = filtered;
+    if (currentCategory !== 'all') {
+        finalFiltered = filtered.filter(p => p.category === currentCategory);
     }
-
-    resultsContainer.innerHTML = filtered.map(product => `
-        <div class="search-result-item" onclick="openProductPage(${product.id}); closeSearchFullscreen();">
-            <img src="${product.image}" alt="${product.name}" class="search-result-image"
-                 onerror="this.src='https://via.placeholder.com/80x80/1a1a1a/707070?text=Image'">
-            <div class="search-result-info">
-                <div class="search-result-name">${product.name}</div>
-                <div class="search-result-price">₹${product.price.toLocaleString()}</div>
-            </div>
-        </div>
-    `).join('');
+    
+    // Apply sort if active
+    if (currentSort !== 'default') {
+        finalFiltered = sortProductsArray(finalFiltered, currentSort);
+    }
+    
+    // Render filtered products
+    renderProducts(finalFiltered);
+    
+    // Update search input and clear button
+    updateMainSearchUI();
+    
+    // Scroll to top to show results
+    setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 100);
 }
 
-// Render Products
+// Clear main search - accessible globally
+function clearMainSearch() {
+    currentSearchQuery = '';
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchInputFullscreen').value = '';
+    document.getElementById('searchClearMain').style.display = 'none';
+    document.getElementById('searchClearFullscreen').style.display = 'none';
+    
+    // Show all products with current category and sort filters
+    filterProducts(currentCategory);
+}
+
+function updateMainSearchUI() {
+    const searchInput = document.getElementById('searchInput');
+    const searchClearMain = document.getElementById('searchClearMain');
+    
+    if (currentSearchQuery) {
+        searchInput.value = currentSearchQuery;
+        searchClearMain.style.display = 'block';
+    } else {
+        searchInput.value = '';
+        searchClearMain.style.display = 'none';
+    }
+}
+
+// Render Products with Animation
 function renderProducts(productsToRender) {
     const grid = document.getElementById('productsGrid');
     
     if (productsToRender.length === 0) {
         grid.innerHTML = `
-            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary);">
+            <div style="grid-column: 1/-1; text-align: center; padding: 3rem; color: var(--text-secondary); animation: fadeIn 0.5s ease;">
                 <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 1rem; color: var(--text-muted);"></i>
                 <p style="font-family: 'Inter', sans-serif;">No products found</p>
             </div>
@@ -398,26 +627,51 @@ function renderProducts(productsToRender) {
         return;
     }
 
-    grid.innerHTML = productsToRender.map(product => `
-        <div class="product-card" onclick="openProductPage(${product.id})">
+    // Clear grid first
+    grid.innerHTML = '';
+    
+    // Add products with staggered animation
+    productsToRender.forEach((product, index) => {
+        const card = document.createElement('div');
+        card.className = 'product-card';
+        card.style.animationDelay = `${index * 0.05}s`;
+        card.onclick = () => openProductPage(product.id);
+        
+        card.innerHTML = `
             <img src="${product.image}" alt="${product.name}" class="product-image" 
                  onerror="this.src='https://via.placeholder.com/300x300/1a1a1a/707070?text=No+Image'">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
                 <div class="product-price">₹${product.price.toLocaleString()}</div>
             </div>
-        </div>
-    `).join('');
+        `;
+        
+        grid.appendChild(card);
+    });
 }
 
 // Filter Products
 function filterProducts(category) {
+    currentCategory = category;
     let filtered = [...products];
     
+    // Apply category filter
     if (category !== 'all') {
         filtered = filtered.filter(p => p.category === category);
     }
     
+    // Apply search filter if active
+    if (currentSearchQuery) {
+        const searchQuery = currentSearchQuery.toLowerCase();
+        filtered = filtered.filter(p => 
+            p.name.toLowerCase().includes(searchQuery) ||
+            p.description.toLowerCase().includes(searchQuery) ||
+            p.productCategory.toLowerCase().includes(searchQuery) ||
+            p.category.toLowerCase().includes(searchQuery)
+        );
+    }
+    
+    // Apply sort
     if (currentSort !== 'default') {
         filtered = sortProductsArray(filtered, currentSort);
     }
@@ -428,8 +682,23 @@ function filterProducts(category) {
 // Sort Products
 function sortProducts(sortType) {
     currentSort = sortType;
-    const category = currentCategory;
-    let filtered = category === 'all' ? [...products] : products.filter(p => p.category === category);
+    let filtered = [...products];
+    
+    // Apply category filter
+    if (currentCategory !== 'all') {
+        filtered = filtered.filter(p => p.category === currentCategory);
+    }
+    
+    // Apply search filter if active
+    if (currentSearchQuery) {
+        const searchQuery = currentSearchQuery.toLowerCase();
+        filtered = filtered.filter(p => 
+            p.name.toLowerCase().includes(searchQuery) ||
+            p.description.toLowerCase().includes(searchQuery) ||
+            p.productCategory.toLowerCase().includes(searchQuery) ||
+            p.category.toLowerCase().includes(searchQuery)
+        );
+    }
     
     filtered = sortProductsArray(filtered, sortType);
     renderProducts(filtered);
@@ -480,23 +749,25 @@ function openProductPage(productId) {
                 </div>
             ` : ''}
         </div>
-        <h1 class="product-page-title">${product.name}</h1>
-        <div class="product-page-price">₹${product.price.toLocaleString()}</div>
-        <div class="store-badge">
-            <i class="fas fa-store"></i> ${storeName}
+        <div class="product-page-info">
+            <h1 class="product-page-title">${product.name}</h1>
+            <div class="product-page-price">₹${product.price.toLocaleString()}</div>
+            <div class="store-badge">
+                <i class="fas fa-store"></i> ${storeName}
+            </div>
+            <div class="product-description">
+                <h3>Description</h3>
+                <p class="description-preview" id="productDescription">${product.description}</p>
+                <span class="toggle-description" onclick="toggleDescription()" id="toggleDesc">Show More</span>
+            </div>
         </div>
-        <div class="product-page-actions">
-            <button class="btn btn-secondary" onclick="addToCart(${product.id})">
+        <div class="product-page-actions-flipkart">
+            <button class="btn-flipkart btn-add-cart" onclick="addToCart(${product.id})">
                 <i class="fas fa-cart-plus"></i> Add to Cart
             </button>
-            <button class="btn btn-primary" onclick="buyNow(${product.id})">
-                <i class="fas fa-shopping-bag"></i> Buy Now
+            <button class="btn-flipkart btn-buy-now" onclick="buyNow(${product.id})">
+                <i class="fas fa-bolt"></i> Buy Now
             </button>
-        </div>
-        <div class="product-description">
-            <h3>Description</h3>
-            <p class="description-preview" id="productDescription">${product.description}</p>
-            <span class="toggle-description" onclick="toggleDescription()" id="toggleDesc">Show More</span>
         </div>
     `;
     
@@ -542,8 +813,13 @@ function toggleDescription() {
 
 function closeProductPage() {
     const productPage = document.getElementById('productPage');
-    productPage.classList.remove('show');
-    document.body.style.overflow = 'auto';
+    // Animate out
+    productPage.style.animation = 'slideOutRight 0.4s ease forwards';
+    setTimeout(() => {
+        productPage.classList.remove('show');
+        productPage.style.animation = '';
+        document.body.style.overflow = 'auto';
+    }, 400);
 }
 
 // Cart Functions
@@ -579,9 +855,30 @@ function removeFromCart(productId) {
 
 function toggleCart() {
     const sidebar = document.getElementById('cartSidebar');
+    const isOpening = !sidebar.classList.contains('open');
+    
     sidebar.classList.toggle('open');
-    if (sidebar.classList.contains('open')) {
+    
+    if (isOpening) {
+        // Add overlay for cart
+        let overlay = document.getElementById('cartOverlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'cartOverlay';
+            overlay.onclick = toggleCart;
+            document.body.appendChild(overlay);
+        }
+        setTimeout(() => {
+            overlay.classList.add('show');
+        }, 10);
         renderCart();
+    } else {
+        // Remove overlay
+        const overlay = document.getElementById('cartOverlay');
+        if (overlay) {
+            overlay.classList.remove('show');
+            setTimeout(() => overlay.remove(), 300);
+        }
     }
 }
 
@@ -591,34 +888,82 @@ function renderCart() {
     
     if (cart.length === 0) {
         cartItems.innerHTML = `
-            <div class="empty-cart">
+            <div class="empty-cart" style="animation: fadeIn 0.5s ease;">
                 <i class="fas fa-shopping-cart"></i>
                 <p>Your cart is empty</p>
             </div>
         `;
-        cartTotal.textContent = '0';
+        animatePriceCount(0, cartTotal);
         return;
     }
     
     const total = cart.reduce((sum, item) => sum + item.price, 0);
-    cartTotal.textContent = total.toLocaleString();
     
-    cartItems.innerHTML = cart.map(item => {
+    // Clear cart items first
+    cartItems.innerHTML = '';
+    
+    // Add cart items with staggered animation
+    cart.forEach((item, index) => {
         const shortName = item.name.length > 50 ? item.name.substring(0, 50) + '...' : item.name;
-        return `
-            <div class="cart-item" onclick="openProductPage(${item.id}); toggleCart();">
-                <img src="${item.image}" alt="${item.name}" class="cart-item-image"
-                     onerror="this.src='https://via.placeholder.com/80x80/1a1a1a/707070?text=Image'">
-                <div class="cart-item-info">
-                    <div class="cart-item-name">${shortName}</div>
-                    <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
-                </div>
-                <button class="remove-item" onclick="event.stopPropagation(); removeFromCart(${item.id})">
-                    <i class="fas fa-trash"></i>
-                </button>
+        const cartItem = document.createElement('div');
+        cartItem.className = 'cart-item';
+        cartItem.style.animationDelay = `${index * 0.1}s`;
+        cartItem.onclick = () => {
+            openProductPage(item.id);
+            toggleCart();
+        };
+        
+        cartItem.innerHTML = `
+            <img src="${item.image}" alt="${item.name}" class="cart-item-image"
+                 onerror="this.src='https://via.placeholder.com/80x80/1a1a1a/707070?text=Image'">
+            <div class="cart-item-info">
+                <div class="cart-item-name">${shortName}</div>
+                <div class="cart-item-price">₹${item.price.toLocaleString()}</div>
             </div>
+            <button class="remove-item" onclick="event.stopPropagation(); removeFromCart(${item.id})">
+                <i class="fas fa-trash"></i>
+            </button>
         `;
-    }).join('');
+        
+        cartItems.appendChild(cartItem);
+    });
+    
+    // Animate price counting
+    animatePriceCount(total, cartTotal);
+}
+
+// Animate price counting
+function animatePriceCount(targetAmount, element) {
+    const currentText = element.textContent.replace(/[^0-9]/g, '');
+    const currentAmount = parseInt(currentText) || 0;
+    const difference = targetAmount - currentAmount;
+    
+    if (difference === 0) {
+        element.textContent = targetAmount.toLocaleString();
+        return;
+    }
+    
+    const duration = Math.min(1000, Math.max(300, Math.abs(difference) * 2)); // Max 1s, min 300ms
+    const steps = 30;
+    const stepAmount = difference / steps;
+    const stepDuration = duration / steps;
+    let current = currentAmount;
+    let step = 0;
+    
+    element.classList.add('counting');
+    
+    const counter = setInterval(() => {
+        step++;
+        current += stepAmount;
+        
+        if (step >= steps || (difference > 0 && current >= targetAmount) || (difference < 0 && current <= targetAmount)) {
+            current = targetAmount;
+            clearInterval(counter);
+            element.classList.remove('counting');
+        }
+        
+        element.textContent = Math.round(current).toLocaleString();
+    }, stepDuration);
 }
 
 function updateCartCount() {
