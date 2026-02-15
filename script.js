@@ -49,6 +49,9 @@ const sampleProducts = [
         productCategory: 'Shirt',
         price: 500,
         image: 'https://i.pinimg.com/736x/21/00/10/21001079de6dbd5b6809b3f2b40717bf.jpg',
+        images: [
+            'https://i.pinimg.com/736x/21/00/10/21001079de6dbd5b6809b3f2b40717bf.jpg',
+        ],
         description: 'Latest Designer Shirt Fabric Is Cotton Blend And Soft Fabric, Shirt Design Formal And Casual To Daily Wear, Shirt Ocassion Is Casual Wear, Partywear, Evening Wear All Day Are Wear',
         buyUrl: 'https://fktr.in/XfEuUpb',
         store: 'flipkart'
