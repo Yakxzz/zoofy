@@ -2,11 +2,19 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
     <title>Zoofy - Fashion & Style</title>
+    <style>
+        /* Fullscreen optimizations */
+        html {
+            height: 100%;
+            height: -webkit-fill-available;
+        }
+    </style>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,6 +47,9 @@
             <div class="search-wrapper" id="searchWrapper">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text" id="searchInput" class="search-input" placeholder="Search products..." readonly>
+                <button class="search-clear-main" id="searchClearMain" style="display: none;" onclick="clearMainSearch()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <button class="sort-toggle" id="sortToggle">
                 <i class="fas fa-bars"></i>
@@ -53,7 +64,6 @@
             <button class="filter-btn" data-category="men">Men</button>
             <button class="filter-btn" data-category="women">Women</button>
             <button class="filter-btn" data-category="kids">Kids</button>
-            <button class="filter-btn" data-category="others">Others</button>
         </div>
     </section>
 
@@ -82,9 +92,6 @@
             </button>
             <h2>Search Products</h2>
         </div>
-        <div class="search-categories" id="searchCategories">
-            <!-- Categories will be dynamically inserted here -->
-        </div>
         <div class="search-input-fullscreen">
             <i class="fas fa-search"></i>
             <input type="text" id="searchInputFullscreen" placeholder="Type to search...">
@@ -92,15 +99,15 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <div class="search-results" id="searchResults">
-            <!-- Search results will be inserted here -->
+        <div class="search-categories" id="searchCategories">
+            <!-- Categories will be dynamically inserted here -->
         </div>
     </div>
 
     <!-- Product Detail Page (Full Screen) -->
     <div class="product-page" id="productPage">
-        <div class="product-page-header">
-            <button class="back-btn-new" onclick="closeProductPage()">
+        <div class="product-page-back">
+            <button class="back-btn-compact" onclick="closeProductPage()">
                 <i class="fas fa-chevron-left"></i>
             </button>
         </div>
@@ -119,8 +126,9 @@
             <!-- Cart items will be inserted here -->
         </div>
         <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total: ₹<span id="cartTotal">0</span></span>
+            <div class="cart-total-box">
+                <span class="cart-total-label">Total Amount</span>
+                <span class="cart-total-amount">₹<span id="cartTotal">0</span></span>
             </div>
         </div>
     </div>
