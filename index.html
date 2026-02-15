@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zoofy - Fashion & Style</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header with Search -->
+    <header class="header">
+        <div class="header-top">
+            <div class="logo">
+                <span class="logo-text">Zoofy</span>
+            </div>
+            <button class="cart-btn" id="cartBtn">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </button>
+        </div>
+        <div class="search-section">
+            <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="Search products...">
+                <button class="search-clear" id="searchClear" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <button class="sort-toggle" id="sortToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Category Filters -->
+    <section class="category-section">
+        <div class="category-filters">
+            <button class="filter-btn active" data-category="all">All</button>
+            <button class="filter-btn" data-category="men">Men</button>
+            <button class="filter-btn" data-category="women">Women</button>
+            <button class="filter-btn" data-category="kids">Kids</button>
+            <button class="filter-btn" data-category="others">Others</button>
+        </div>
+    </section>
+
+    <!-- Sort Dropdown -->
+    <div class="sort-dropdown" id="sortDropdown">
+        <button class="sort-option" data-sort="default">Default</button>
+        <button class="sort-option" data-sort="price-low">Price: Low to High</button>
+        <button class="sort-option" data-sort="price-high">Price: High to Low</button>
+        <button class="sort-option" data-sort="name-asc">Name: A to Z</button>
+        <button class="sort-option" data-sort="name-desc">Name: Z to A</button>
+        <button class="sort-option" data-sort="newest">Newest First</button>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <!-- Product Detail Page (Full Screen) -->
+    <div class="product-page" id="productPage">
+        <button class="back-btn" onclick="closeProductPage()">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        <div class="product-page-content" id="productPageContent">
+            <!-- Product details will be inserted here -->
+        </div>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h2>Your Cart</h2>
+            <button class="close-cart">&times;</button>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <!-- Cart items will be inserted here -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total: ₹<span id="cartTotal">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal" id="infoModal">
+        <div class="modal-content info-modal">
+            <span class="close-modal">&times;</span>
+            <div class="info-content">
+                <h1 class="app-name">Zoofy</h1>
+                <p class="app-version">0.1 Beta</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-page="home">
+            <i class="fas fa-home"></i>
+        </button>
+        <button class="nav-item" data-page="cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="nav-badge" id="navCartCount">0</span>
+        </button>
+        <button class="nav-item" data-page="info">
+            <i class="fas fa-info-circle"></i>
+        </button>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
