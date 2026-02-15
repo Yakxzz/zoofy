@@ -37,7 +37,6 @@ const sampleProducts = [
         image: 'https://i.ibb.co/604BL98C/aiease-1771149430500-1.jpg',
         images: [
             'https://i.ibb.co/604BL98C/aiease-1771149430500-1.jpg',
-            'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500'
         ],
         description: 'This beautiful Gown is made of high quality rayon fabric and moti work.\n\nThis Gown can be used as wedding dress or party dress.\n\nThis Gown has been specially designed keeping in mind the latest trends of fashion.\n\nThis Gown can be worn as an ethnic dress or casual wear.\n\nA Gown is a traditional Indian garment which is most commonly worn by women, especially in India.\n\nYou can choose different color according to your own taste.\n\nProduct Features:\n1. High Quality Material: 100% Rayon + Moti Work\n2. Soft and Comfortable Fabric\n3. Easy To Wear And Wash\n4. Colorful And Fashionable Design\n5. Customized Size Available\n6. Best Price Guarantee',
         buyUrl: 'https://fktr.in/JtJiimQ',
@@ -45,65 +44,16 @@ const sampleProducts = [
     },
     {
         id: 2,
-        name: 'Floral Summer Dress',
-        category: 'women',
-        productCategory: 'Dress',
+        name: 'Men Regular Fit Solid Button Down Collar Casual Shirt',
+        category: 'men',
+        productCategory: 'Shirt',
         price: 1599,
         image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500',
         images: [
-            'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=500',
-            'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500'
+            'https://i.pinimg.com/736x/21/00/10/21001079de6dbd5b6809b3f2b40717bf.jpg',
         ],
-        description: 'Beautiful floral dress for summer occasions.\n\nPerfect for casual outings and parties.\n\nMade with premium quality fabric.\n\nComfortable and stylish design.',
-        buyUrl: 'https://www.flipkart.com/floral-dress',
-        store: 'flipkart'
-    },
-    {
-        id: 3,
-        name: 'Kids Cartoon T-Shirt',
-        category: 'kids',
-        productCategory: 'T-Shirt',
-        price: 499,
-        image: 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500',
-        images: ['https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500'],
-        description: 'Fun cartoon t-shirt for kids.\n\nSoft and comfortable fabric.\n\nVarious cartoon designs available.\n\nPerfect for daily wear.',
-        buyUrl: 'https://www.flipkart.com/kids-tshirt',
-        store: 'flipkart'
-    },
-    {
-        id: 4,
-        name: 'Leather Handbag',
-        category: 'others',
-        productCategory: 'Handbag',
-        price: 2499,
-        image: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500',
-        images: ['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=500'],
-        description: 'Premium leather handbag.\n\nDurable and stylish design.\n\nMultiple compartments for organization.\n\nPerfect for office and casual use.',
-        buyUrl: 'https://www.flipkart.com/leather-handbag',
-        store: 'flipkart'
-    },
-    {
-        id: 5,
-        name: 'Slim Fit Jeans',
-        category: 'men',
-        productCategory: 'Jeans',
-        price: 999,
-        image: 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500',
-        images: ['https://images.unsplash.com/photo-1542272604-787c3835535d?w=500'],
-        description: 'Comfortable slim fit jeans.\n\nPremium denim fabric.\n\nPerfect fit and style.\n\nAvailable in multiple sizes.',
-        buyUrl: 'https://www.flipkart.com/slim-jeans',
-        store: 'flipkart'
-    },
-    {
-        id: 6,
-        name: 'Elegant Blouse',
-        category: 'women',
-        productCategory: 'Blouse',
-        price: 899,
-        image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500',
-        images: ['https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=500'],
-        description: 'Elegant blouse for formal occasions.\n\nPremium fabric with intricate designs.\n\nPerfect for weddings and parties.\n\nComfortable and stylish.',
-        buyUrl: 'https://www.flipkart.com/blouse',
+        description: 'Latest Designer Shirt Fabric Is Cotton Blend And Soft Fabric, Shirt Design Formal And Casual To Daily Wear, Shirt Ocassion Is Casual Wear, Partywear, Evening Wear All Day Are Wear',
+        buyUrl: 'https://fktr.in/XfEuUpb',
         store: 'flipkart'
     }
 ];
