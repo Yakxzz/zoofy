@@ -33,7 +33,7 @@ const sampleProducts = [
         name: 'Women Appluque Art Silk Anarkali Kurti with attached Dupatta',
         category: 'women',
         productCategory: 'Kurti',
-        price: 438,
+        price: 443,
         image: 'https://i.ibb.co/604BL98C/aiease-1771149430500-1.jpg',
         images: [
             'https://i.ibb.co/604BL98C/aiease-1771149430500-1.jpg',
@@ -995,3 +995,4 @@ function showNotification(message) {
         setTimeout(() => notification.remove(), 400);
     }, 2500);
 }
+
